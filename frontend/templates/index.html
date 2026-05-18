@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Linux Control Panel</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <div class="logo">
+                <h2>🖥️ Control Panel</h2>
+            </div>
+            <nav class="nav-menu">
+                <a href="#" class="nav-item active" onclick="showSection('dashboard')">
+                    📊 Dashboard
+                </a>
+                <a href="#" class="nav-item" onclick="showSection('system')">
+                    ⚙️ النظام
+                </a>
+                <a href="#" class="nav-item" onclick="showSection('network')">
+                    🌐 الشبكة
+                </a>
+                <a href="#" class="nav-item" onclick="showSection('processes')">
+                    📋 العمليات
+                </a>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="header">
+                <h1>لوحة التحكم</h1>
+                <div class="status-bar">
+                    <span class="status" id="status">متصل ✅</span>
+                </div>
+            </header>
+
+            <section id="dashboard" class="section active">
+                <div class="dashboard-grid">
+                    <div class="card">
+                        <h3>المعالج (CPU)</h3>
+                        <div class="metric">
+                            <div class="value" id="cpu-value">0%</div>
+                            <div class="label">الاستخدام</div>
+                        </div>
+                        <canvas id="cpuChart"></canvas>
+                    </div>
+
+                    <div class="card">
+                        <h3>الذاكرة (RAM)</h3>
+                        <div class="metric">
+                            <div class="value" id="memory-value">0%</div>
+                            <div class="label">الاستخدام</div>
+                        </div>
+                        <canvas id="memoryChart"></canvas>
+                    </div>
+
+                    <div class="card">
+                        <h3>القرص الصلب (Disk)</h3>
+                        <div class="metric">
+                            <div class="value" id="disk-value">0%</div>
+                            <div class="label">الاستخدام</div>
+                        </div>
+                        <canvas id="diskChart"></canvas>
+                    </div>
+
+                    <div class="card">
+                        <h3>الشبكة</h3>
+                        <div class="metric">
+                            <div class="label">البيانات المرسلة</div>
+                            <div class="value" id="network-sent">0 MB</div>
+                            <div class="label">البيانات المستقبلة</div>
+                            <div class="value" id="network-recv">0 MB</div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3>وقت التشغيل</h3>
+                        <div class="metric">
+                            <div class="value" id="uptime-value">--:--:--</div>
+                            <div class="label">منذ آخر إعادة تشغيل</div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3>العمليات</h3>
+                        <div class="metric">
+                            <div class="value" id="process-count">0</div>
+                            <div class="label">عملية نشطة</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="system" class="section">
+                <div class="card">
+                    <h3>معلومات النظام</h3>
+                    <div id="system-info">جاري التحميل...</div>
+                </div>
+            </section>
+
+            <section id="network" class="section">
+                <div class="card">
+                    <h3>معلومات الشبكة</h3>
+                    <div id="network-info">جاري التحميل...</div>
+                </div>
+            </section>
+
+            <section id="processes" class="section">
+                <div class="card">
+                    <h3>العمليات الجارية</h3>
+                    <div id="processes-list">جاري التحميل...</div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
