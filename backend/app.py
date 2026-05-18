@@ -1,6 +1,7 @@
 from flask import Flask, render_template
 from flask_socketio import SocketIO, emit
 from services.system_monitor import SystemMonitor
+from routes.dashboard import dashboard_bp
 import threading
 import time
 
@@ -9,6 +10,9 @@ app.config['SECRET_KEY'] = 'your-secret-key-here'
 
 socketio = SocketIO(app, cors_allowed_origins="*")
 monitor = SystemMonitor()
+
+# تسجيل الـ Blueprint
+app.register_blueprint(dashboard_bp)
 
 # متغير للتحكم في الـ Thread
 monitoring = False

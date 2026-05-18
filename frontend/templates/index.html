@@ -18,14 +18,17 @@
                 <a href="#" class="nav-item active" onclick="showSection('dashboard')">
                     📊 Dashboard
                 </a>
-                <a href="#" class="nav-item" onclick="showSection('system')">
-                    ⚙️ النظام
-                </a>
-                <a href="#" class="nav-item" onclick="showSection('network')">
-                    🌐 الشبكة
-                </a>
                 <a href="#" class="nav-item" onclick="showSection('processes')">
                     📋 العمليات
+                </a>
+                <a href="#" class="nav-item" onclick="showSection('services')">
+                    ⚙️ الخدمات
+                </a>
+                <a href="#" class="nav-item" onclick="showSection('logs')">
+                    📜 الـ Logs
+                </a>
+                <a href="#" class="nav-item" onclick="showSection('system')">
+                    🖱️ النظام
                 </a>
             </nav>
         </aside>
@@ -38,6 +41,7 @@
                 </div>
             </header>
 
+            <!-- Dashboard Section -->
             <section id="dashboard" class="section active">
                 <div class="dashboard-grid">
                     <!-- CPU Card -->
@@ -101,27 +105,76 @@
                 </div>
             </section>
 
-            <!-- System Section -->
-            <section id="system" class="section">
-                <div class="card">
-                    <h3>معلومات النظام</h3>
-                    <div id="system-info">جاري التحميل...</div>
-                </div>
-            </section>
-
-            <!-- Network Section -->
-            <section id="network" class="section">
-                <div class="card">
-                    <h3>معلومات الشبكة</h3>
-                    <div id="network-info">جاري التحميل...</div>
-                </div>
-            </section>
-
             <!-- Processes Section -->
             <section id="processes" class="section">
                 <div class="card">
-                    <h3>العمليات الجارية</h3>
-                    <div id="processes-list">جاري التحميل...</div>
+                    <h3>أعلى العمليات استهلاكاً 📋</h3>
+                    <div class="filter-bar">
+                        <button onclick="loadProcesses('cpu')" class="btn btn-primary">CPU</button>
+                        <button onclick="loadProcesses('memory')" class="btn btn-primary">Memory</button>
+                    </div>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>PID</th>
+                                    <th>اسم العملية</th>
+                                    <th>CPU %</th>
+                                    <th>Memory %</th>
+                                    <th>الإجراء</th>
+                                </tr>
+                            </thead>
+                            <tbody id="processes-list">
+                                <tr><td colspan="5">جاري التحميل...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Services Section -->
+            <section id="services" class="section">
+                <div class="card">
+                    <h3>الخدمات (Services) ⚙️</h3>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>اسم الخدمة</th>
+                                    <th>الحالة</th>
+                                    <th>النشاط</th>
+                                    <th>الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="services-list">
+                                <tr><td colspan="4">جاري التحميل...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Logs Section -->
+            <section id="logs" class="section">
+                <div class="card">
+                    <h3>الـ Logs 📜</h3>
+                    <div class="filter-bar">
+                        <button onclick="loadLogs('system')" class="btn btn-primary">System</button>
+                        <button onclick="loadLogs('auth')" class="btn btn-primary">Auth</button>
+                        <button onclick="loadLogs('errors')" class="btn btn-warning">Errors</button>
+                        <button onclick="loadFailedLogins()" class="btn btn-danger">Failed Logins</button>
+                    </div>
+                    <div class="log-container" id="logs-content">
+                        <p>جاري التحميل...</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- System Section -->
+            <section id="system" class="section">
+                <div class="card">
+                    <h3>معلومات النظام 🖱️</h3>
+                    <div id="system-info">جاري التحميل...</div>
                 </div>
             </section>
         </main>
