@@ -1,21 +1,37 @@
+// تهيئة Socket.IO
 const socket = io();
 
+// متغيرات الرسوم البيانية
 let cpuChart, memoryChart, diskChart;
+let cpuHistory = [];
+let memoryHistory = [];
+let maxHistoryPoints = 30;
 
+// الاتصال بالسيرفر
 socket.on('connect', function() {
-    console.log('Connected to server');
+    console.log('✅ Connected to server');
     updateStatus('متصل ✅');
 });
 
 socket.on('disconnect', function() {
-    console.log('Disconnected from server');
+    console.log('❌ Disconnected from server');
     updateStatus('مقطوع ❌');
 });
 
+// استقبال البيانات الحية من السيرفر
+socket.on('system_data', function(data) {
+    updateDashboard(data);
+});
+
+// تحديث حالة الاتصال
 function updateStatus(status) {
-    document.getElementById('status').textContent = status;
+    const statusEl = document.getElementById('status');
+    if (statusEl) {
+        statusEl.textContent = status;
+    }
 }
 
+// عرض القسم المختار
 function showSection(sectionId) {
     const sections = document.querySelectorAll('.section');
     sections.forEach(section => section.classList.remove('active'));
@@ -27,49 +43,91 @@ function showSection(sectionId) {
     event.target.classList.add('active');
 }
 
+// إنشاء الرسوم البيانية
 function initCharts() {
+    // CPU Chart - Line Chart
     const cpuCtx = document.getElementById('cpuChart').getContext('2d');
     cpuChart = new Chart(cpuCtx, {
-        type: 'doughnut',
+        type: 'line',
         data: {
-            labels: ['مستخدم', 'متاح'],
+            labels: [],
             datasets: [{
-                data: [0, 100],
-                backgroundColor: ['#e94560', '#1a1a2e'],
-                borderColor: '#16213e',
-                borderWidth: 2
+                label: 'CPU %',
+                data: [],
+                borderColor: '#e94560',
+                backgroundColor: 'rgba(233, 69, 96, 0.1)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.4,
+                pointRadius: 3,
+                pointBackgroundColor: '#e94560'
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: { labels: { color: '#eaeaea' } }
+                legend: { 
+                    labels: { color: '#eaeaea' }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    ticks: { color: '#aaa' },
+                    grid: { color: '#333' }
+                },
+                x: {
+                    ticks: { color: '#aaa' },
+                    grid: { color: '#333' }
+                }
             }
         }
     });
 
+    // Memory Chart - Line Chart
     const memoryCtx = document.getElementById('memoryChart').getContext('2d');
     memoryChart = new Chart(memoryCtx, {
-        type: 'doughnut',
+        type: 'line',
         data: {
-            labels: ['مستخدم', 'متاح'],
+            labels: [],
             datasets: [{
-                data: [0, 100],
-                backgroundColor: ['#f39c12', '#1a1a2e'],
-                borderColor: '#16213e',
-                borderWidth: 2
+                label: 'Memory %',
+                data: [],
+                borderColor: '#f39c12',
+                backgroundColor: 'rgba(243, 156, 18, 0.1)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.4,
+                pointRadius: 3,
+                pointBackgroundColor: '#f39c12'
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: { labels: { color: '#eaeaea' } }
+                legend: { 
+                    labels: { color: '#eaeaea' }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    ticks: { color: '#aaa' },
+                    grid: { color: '#333' }
+                },
+                x: {
+                    ticks: { color: '#aaa' },
+                    grid: { color: '#333' }
+                }
             }
         }
     });
 
+    // Disk Chart - Doughnut
     const diskCtx = document.getElementById('diskChart').getContext('2d');
     diskChart = new Chart(diskCtx, {
         type: 'doughnut',
@@ -92,69 +150,91 @@ function initCharts() {
     });
 }
 
-async function fetchSystemInfo() {
-    try {
-        const response = await fetch('/api/system-info');
-        const data = await response.json();
+// تحديث لوحة التحكم بالبيانات الحية
+function updateDashboard(data) {
+    // تحديث CPU
+    const cpuValue = data.cpu.percent;
+    document.getElementById('cpu-value').textContent = cpuValue.toFixed(1) + '%';
+    
+    // إضافة للـ History
+    cpuHistory.push(cpuValue);
+    if (cpuHistory.length > maxHistoryPoints) {
+        cpuHistory.shift();
+    }
+    
+    // تحديث CPU Chart
+    updateLineChart(cpuChart, cpuHistory, 'CPU');
 
-        document.getElementById('cpu-value').textContent = data.cpu.toFixed(1) + '%';
-        cpuChart.data.datasets[0].data = [data.cpu, 100 - data.cpu];
-        cpuChart.update();
+    // تحديث Memory
+    const memoryValue = data.memory.percent;
+    document.getElementById('memory-value').textContent = memoryValue.toFixed(1) + '%';
+    
+    memoryHistory.push(memoryValue);
+    if (memoryHistory.length > maxHistoryPoints) {
+        memoryHistory.shift();
+    }
+    
+    updateLineChart(memoryChart, memoryHistory, 'Memory');
 
-        document.getElementById('memory-value').textContent = data.memory.percent.toFixed(1) + '%';
-        memoryChart.data.datasets[0].data = [data.memory.percent, 100 - data.memory.percent];
-        memoryChart.update();
+    // تحديث Disk
+    const diskValue = data.disk.percent;
+    document.getElementById('disk-value').textContent = diskValue.toFixed(1) + '%';
+    diskChart.data.datasets[0].data = [diskValue, 100 - diskValue];
+    diskChart.update();
 
-        document.getElementById('disk-value').textContent = data.disk.percent.toFixed(1) + '%';
-        diskChart.data.datasets[0].data = [data.disk.percent, 100 - data.disk.percent];
-        diskChart.update();
+    // تحديث Network
+    const sentMB = (data.network.bytes_sent / (1024 ** 2)).toFixed(2);
+    const recvMB = (data.network.bytes_recv / (1024 ** 2)).toFixed(2);
+    document.getElementById('network-sent').textContent = sentMB + ' MB';
+    document.getElementById('network-recv').textContent = recvMB + ' MB';
 
-        const bootTime = new Date(data.uptime * 1000);
-        const now = new Date();
-        const uptime = Math.floor((now - bootTime) / 1000);
-        const hours = Math.floor(uptime / 3600);
-        const minutes = Math.floor((uptime % 3600) / 60);
-        const seconds = uptime % 60;
-        document.getElementById('uptime-value').textContent = 
-            `${hours}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-    } catch (error) {
-        console.error('Error fetching system info:', error);
+    // تحديث Uptime
+    updateUptime(data.uptime);
+
+    // تحديث عدد العمليات
+    document.getElementById('process-count').textContent = data.process_count;
+
+    // تحديث الألوان حسب الاستخدام
+    updateCardColors(cpuValue, memoryValue, diskValue);
+}
+
+// تحديث الـ Line Chart
+function updateLineChart(chart, data, label) {
+    chart.data.labels = data.map((_, i) => i);
+    chart.data.datasets[0].data = data;
+    chart.update('none');
+}
+
+// تحديث وقت التشغيل
+function updateUptime(uptime) {
+    const seconds = uptime.total_seconds;
+    const days = Math.floor(seconds / 86400);
+    const hours = Math.floor((seconds % 86400) / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+    
+    const formatted = `${days}d ${hours}h ${minutes}m ${secs}s`;
+    document.getElementById('uptime-value').textContent = formatted;
+}
+
+// تحديث ألوان الـ Cards حسب الخطورة
+function updateCardColors(cpu, memory, disk) {
+    const cpuCard = document.querySelector('[data-metric="cpu"]');
+    const memoryCard = document.querySelector('[data-metric="memory"]');
+    const diskCard = document.querySelector('[data-metric="disk"]');
+
+    if (cpuCard) {
+        cpuCard.style.borderColor = cpu > 80 ? '#e74c3c' : cpu > 50 ? '#f39c12' : '#0f3460';
+    }
+    if (memoryCard) {
+        memoryCard.style.borderColor = memory > 80 ? '#e74c3c' : memory > 50 ? '#f39c12' : '#0f3460';
+    }
+    if (diskCard) {
+        diskCard.style.borderColor = disk > 80 ? '#e74c3c' : disk > 50 ? '#f39c12' : '#0f3460';
     }
 }
 
-async function fetchProcessCount() {
-    try {
-        const response = await fetch('/api/process-count');
-        const data = await response.json();
-        document.getElementById('process-count').textContent = data.process_count;
-    } catch (error) {
-        console.error('Error fetching process count:', error);
-    }
-}
-
-async function fetchNetworkInfo() {
-    try {
-        const response = await fetch('/api/network-info');
-        const data = await response.json();
-        document.getElementById('network-sent').textContent = 
-            (data.bytes_sent / (1024 ** 2)).toFixed(2) + ' MB';
-        document.getElementById('network-recv').textContent = 
-            (data.bytes_recv / (1024 ** 2)).toFixed(2) + ' MB';
-    } catch (error) {
-        console.error('Error fetching network info:', error);
-    }
-}
-
-function startUpdating() {
-    setInterval(fetchSystemInfo, 1000);
-    setInterval(fetchProcessCount, 2000);
-    setInterval(fetchNetworkInfo, 2000);
-}
-
+// تهيئة الصفحة
 document.addEventListener('DOMContentLoaded', function() {
     initCharts();
-    fetchSystemInfo();
-    fetchProcessCount();
-    fetchNetworkInfo();
-    startUpdating();
 });
