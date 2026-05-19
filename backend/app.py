@@ -112,3 +112,61 @@ if __name__ == '__main__':
     scheduler.start()
     
     socketio.run(app, host='127.0.0.1', port=5000, debug=True, use_reloader=False)
+
+# ==================== Alerts API (إضافة) ====================
+
+@app.route('/api/alerts', methods=['GET'])
+def get_alerts_api():
+    from flask import request, jsonify
+    limit = request.args.get('limit', 50, type=int)
+    alerts = alert_monitor.get_alerts(limit)
+    return jsonify({'alerts': alerts})
+
+@app.route('/api/alerts/unread', methods=['GET'])
+def get_unread_alerts_api():
+    from flask import jsonify
+    count = alert_monitor.get_unread_count()
+    return jsonify({'unread_count': count})
+
+@app.route('/api/alerts/thresholds', methods=['GET'])
+def get_thresholds_api():
+    from flask import jsonify
+    thresholds = alert_monitor.get_thresholds()
+    return jsonify({'thresholds': thresholds})
+
+@app.route('/api/alerts/thresholds', methods=['POST'])
+def set_thresholds_api():
+    from flask import request, jsonify
+    data = request.json
+    metric = data.get('metric')
+    level = data.get('level')
+    value = data.get('value')
+    
+    success = alert_monitor.set_threshold(metric, level, value)
+    if success:
+        db.set_setting(f'threshold_{metric}_{level}', str(value))
+    return jsonify({'success': success})
+
+# ==================== Statistics API ====================
+
+@app.route('/api/stats/history', methods=['GET'])
+def get_stats_history_api():
+    from flask import request, jsonify
+    hours = request.args.get('hours', 24, type=int)
+    stats = db.get_system_stats(hours)
+    formatted_stats = []
+    for stat in stats:
+        formatted_stats.append({
+            'timestamp': stat[1],
+            'cpu': stat[2],
+            'memory': stat[3],
+            'disk': stat[4],
+            'network_sent': stat[5],
+            'network_recv': stat[6],
+            'process_count': stat[7]
+        })
+    return jsonify({'stats': formatted_stats})
+
+@app.route('/favicon.ico')
+def favicon():
+    return '', 204
