@@ -2,9 +2,9 @@ const socket = io();
 let cpuChart, memoryChart, diskChart, statsChart;
 let cpuHistory = [], memoryHistory = [];
 const maxHistoryPoints = 30;
-let currentAlertFilter = 'all';
 
-// الاتصال بالسيرفر
+// ==================== Socket Events ====================
+
 socket.on('connect', function() {
     console.log('✅ Connected to server');
     updateStatus('متصل ✅');
@@ -15,7 +15,7 @@ socket.on('connect', function() {
 });
 
 socket.on('disconnect', function() {
-    console.log('❌ Disconnected from server');
+    console.log('❌ Disconnected');
     updateStatus('مقطوع ❌');
 });
 
@@ -45,8 +45,22 @@ function showSection(sectionId) {
     navItems.forEach(item => item.classList.remove('active'));
     event.target.classList.add('active');
 
+    if (sectionId === 'network') {
+        scanWiFi();
+        loadDevices();
+    }
     if (sectionId === 'statistics') loadStats(24);
     if (sectionId === 'settings') loadThresholds();
+}
+
+function showNetworkTab(tab) {
+    const tabs = document.querySelectorAll('.tab-content');
+    tabs.forEach(t => t.classList.remove('active'));
+    document.getElementById(tab + '-tab').classList.add('active');
+
+    const buttons = document.querySelectorAll('.tab-button');
+    buttons.forEach(b => b.classList.remove('active'));
+    event.target.classList.add('active');
 }
 
 function toggleTheme() {
@@ -69,8 +83,7 @@ function initCharts() {
                 backgroundColor: 'rgba(233, 69, 96, 0.1)',
                 borderWidth: 2,
                 fill: true,
-                tension: 0.4,
-                pointRadius: 3
+                tension: 0.4
             }]
         },
         options: {
@@ -185,6 +198,209 @@ function updateCardColors(cpu, memory, disk) {
     if (diskCard) diskCard.style.borderColor = disk > 80 ? '#e74c3c' : disk > 50 ? '#f39c12' : '#0f3460';
 }
 
+// ==================== Network Functions ====================
+
+function scanWiFi() {
+    showLoadingIndicator('wifi-list');
+    fetch('/api/network/wifi/scan')
+        .then(res => res.json())
+        .then(data => {
+            const tbody = document.getElementById('wifi-list');
+            if (data.networks.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4">لم يتم العثور على شبكات</td></tr>';
+                return;
+            }
+            tbody.innerHTML = data.networks.map(n => `
+                <tr class="signal-${n.signal > 70 ? 'strong' : n.signal > 40 ? 'medium' : 'weak'}">
+                    <td>${n.ssid}</td>
+                    <td>
+                        <div class="signal-bar">
+                            <div class="signal-fill" style="width: ${n.signal}%"></div>
+                        </div>
+                        ${n.signal}%
+                    </td>
+                    <td>${n.security}</td>
+                    <td>${n.channel}</td>
+                </tr>
+            `).join('');
+            
+            // تحديث الاتصال الحالي
+            loadCurrentWiFi();
+        })
+        .catch(err => console.error('Error:', err));
+}
+
+function loadCurrentWiFi() {
+    fetch('/api/network/wifi/current')
+        .then(res => res.json())
+        .then(data => {
+            const current = document.getElementById('current-wifi');
+            if (data.current) {
+                current.innerHTML = `
+                    <div class="current-wifi-info">
+                        <p><strong>الشبكة:</strong> ${data.current.name}</p>
+                        <p><strong>الجهاز:</strong> ${data.current.device}</p>
+                        <p><strong>الحالة:</strong> ${data.current.state}</p>
+                    </div>
+                `;
+            } else {
+                current.innerHTML = '<p>غير متصل</p>';
+            }
+        });
+}
+
+function loadDevices() {
+    showLoadingIndicator('devices-list');
+    fetch('/api/network/devices/arp')
+        .then(res => res.json())
+        .then(data => {
+            const tbody = document.getElementById('devices-list');
+            if (data.devices.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4">لم يتم العثور على أجهزة</td></tr>';
+                return;
+            }
+            tbody.innerHTML = data.devices.map(d => `
+                <tr>
+                    <td><span class="ip-badge">${d.ip}</span></td>
+                    <td>${d.mac}</td>
+                    <td>${d.vendor}</td>
+                    <td>
+                        <button class="btn btn-small btn-primary" onclick="pingHost('${d.ip}')">Ping</button>
+                        <button class="btn btn-small btn-warning" onclick="quickPortScan('${d.ip}')">Scan</button>
+                    </td>
+                </tr>
+            `).join('');
+        })
+        .catch(err => console.error('Error:', err));
+}
+
+function pingHost(ip = null) {
+    const ipInput = ip || document.getElementById('ping-ip').value;
+    if (!ipInput) {
+        alert('أدخل عنوان IP');
+        return;
+    }
+
+    showLoadingIndicator('ping-result', 'جاري ال Ping...');
+    fetch('/api/network/ping', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ip: ipInput })
+    })
+    .then(res => res.json())
+    .then(data => {
+        const result = document.getElementById('ping-result');
+        if (data.error) {
+            result.innerHTML = `<p class="error">❌ ${data.error}</p>`;
+        } else {
+            result.innerHTML = `
+                <div class="result-box success">
+                    <p>✅ <strong>${data.ip}</strong> متصل</p>
+                    <p>Min: ${data.min}ms | Avg: ${data.avg}ms | Max: ${data.max}ms</p>
+                </div>
+            `;
+        }
+    });
+}
+
+function dnsLookup() {
+    const domain = document.getElementById('dns-domain').value;
+    if (!domain) {
+        alert('أدخل اسم domain');
+        return;
+    }
+
+    showLoadingIndicator('dns-result', 'جاري البحث...');
+    fetch('/api/network/dns/lookup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ domain })
+    })
+    .then(res => res.json())
+    .then(data => {
+        const result = document.getElementById('dns-result');
+        if (data.error) {
+            result.innerHTML = `<p class="error">❌ ${data.error}</p>`;
+        } else {
+            result.innerHTML = `
+                <div class="result-box success">
+                    <p><strong>${data.domain}</strong></p>
+                    <p>IP: <span class="ip-badge">${data.ip}</span></p>
+                </div>
+            `;
+        }
+    });
+}
+
+function quickPortScan(ip = null) {
+    const ipInput = ip || document.getElementById('port-ip').value;
+    if (!ipInput) {
+        alert('أدخل عنوان IP');
+        return;
+    }
+
+    showLoadingIndicator('port-result', 'جاري الفحص...');
+    fetch('/api/network/ports/quick', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ip: ipInput })
+    })
+    .then(res => res.json())
+    .then(data => {
+        const result = document.getElementById('port-result');
+        if (data.error) {
+            result.innerHTML = `<p class="error">❌ ${data.error}</p>`;
+        } else {
+            result.innerHTML = `
+                <div class="result-box">
+                    <p><strong>المنافذ المفتوحة:</strong></p>
+                    <div class="ports-grid">
+                        ${data.open_ports.map(p => `<span class="port-badge">${p}</span>`).join('')}
+                    </div>
+                    <p>${data.open_ports.length} منفذ مفتوح</p>
+                </div>
+            `;
+        }
+    });
+}
+
+function pingSweep() {
+    const network = document.getElementById('sweep-network').value;
+    if (!network) {
+        alert('أدخل الشبكة (مثال: 192.168.1.0/24)');
+        return;
+    }
+
+    showLoadingIndicator('sweep-result', 'جاري المسح... هذا قد يستغرق دقائق...');
+    fetch('/api/network/ping-sweep', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ network })
+    })
+    .then(res => res.json())
+    .then(data => {
+        const result = document.getElementById('sweep-result');
+        result.innerHTML = `
+            <div class="result-box success">
+                <p><strong>${data.online_hosts.length} جهاز متصل</strong></p>
+                <div class="hosts-list">
+                    ${data.online_hosts.map(h => `
+                        <div class="host-item">
+                            <span class="ip-badge">${h.ip}</span>
+                            <button class="btn btn-small btn-primary" onclick="pingHost('${h.ip}')">Details</button>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    });
+}
+
+function showLoadingIndicator(elementId, text = 'جاري التحميل...') {
+    const elem = document.getElementById(elementId);
+    if (elem) elem.innerHTML = `<p class="loading">${text}</p>`;
+}
+
 // ==================== Alerts ====================
 
 function loadAlerts() {
@@ -226,7 +442,6 @@ function addAlertToUI(alert) {
 }
 
 function filterAlerts(level) {
-    currentAlertFilter = level;
     loadAlerts();
 }
 
@@ -258,7 +473,7 @@ function loadProcesses(sortBy = 'cpu') {
 }
 
 function killProcess(pid) {
-    if (confirm(`هل أنت متأكد من إيقاف العملية ${pid}؟`)) {
+    if (confirm(`هل أنت متأكد؟`)) {
         fetch(`/api/process/${pid}/kill`, { method: 'POST' })
             .then(res => res.json())
             .then(data => {
@@ -315,7 +530,7 @@ function loadLogs(logType) {
                 return;
             }
             content.innerHTML = `
-                <div class="log-header">📜 ${logType.toUpperCase()} - آخر ${data.count} سطر</div>
+                <div class="log-header">📜 ${logType.toUpperCase()}</div>
                 <pre class="log-content">${data.lines.join('\n')}</pre>
             `;
         });
@@ -327,7 +542,7 @@ function loadFailedLogins() {
         .then(data => {
             const content = document.getElementById('logs-content');
             content.innerHTML = `
-                <div class="log-header">🔐 محاولات تسجيل دخول فاشلة - ${data.count} محاولة</div>
+                <div class="log-header">🔐 محاولات فاشلة</div>
                 <pre class="log-content">${data.failed_attempts.join('\n')}</pre>
             `;
         });
@@ -419,7 +634,7 @@ function saveSetting(metric, level) {
         body: JSON.stringify({ metric, level, value: parseInt(value) })
     })
     .then(res => res.json())
-    .then(data => alert(data.success ? 'تم الحفظ' : 'خطأ'));
+    .then(data => alert(data.success ? '✅ تم الحفظ' : '❌ خطأ'));
 }
 
 // تهيئة الصفحة

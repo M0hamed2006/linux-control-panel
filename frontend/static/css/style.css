@@ -511,3 +511,194 @@ canvas {
         padding: 15px;
     }
 }
+
+/* ==================== Network Tabs ==================== */
+
+.tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid var(--border);
+}
+
+.tab-button {
+    padding: 12px 20px;
+    background: transparent;
+    border: none;
+    color: #aaa;
+    cursor: pointer;
+    font-weight: bold;
+    border-bottom: 3px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.tab-button:hover {
+    color: var(--accent);
+}
+
+.tab-button.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+    animation: fadeIn 0.3s ease;
+}
+
+/* ==================== Network Styles ==================== */
+
+.signal-bar {
+    display: inline-block;
+    width: 100px;
+    height: 20px;
+    background: #1a1a2e;
+    border: 1px solid #555;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-right: 10px;
+    vertical-align: middle;
+}
+
+.signal-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #2ecc71, #f39c12);
+    transition: width 0.3s ease;
+}
+
+.signal-strong .signal-fill {
+    background: linear-gradient(90deg, #2ecc71, #27ae60);
+}
+
+.signal-medium .signal-fill {
+    background: linear-gradient(90deg, #f39c12, #e67e22);
+}
+
+.signal-weak .signal-fill {
+    background: linear-gradient(90deg, #e74c3c, #c0392b);
+}
+
+.ip-badge {
+    background: var(--secondary);
+    padding: 5px 10px;
+    border-radius: 4px;
+    border-left: 3px solid var(--accent);
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    color: #0f0;
+}
+
+.port-badge {
+    background: var(--primary);
+    color: var(--accent);
+    padding: 8px 12px;
+    border-radius: 4px;
+    margin: 5px;
+    display: inline-block;
+    border: 1px solid var(--accent);
+    font-weight: bold;
+}
+
+.ports-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    gap: 10px;
+    margin: 10px 0;
+}
+
+.result-box {
+    background: var(--primary);
+    border-left: 4px solid var(--warning);
+    padding: 15px;
+    border-radius: 4px;
+    margin: 10px 0;
+}
+
+.result-box.success {
+    border-left-color: var(--success);
+}
+
+.result-box p {
+    margin: 8px 0;
+    color: var(--text);
+}
+
+.tool-section {
+    margin-bottom: 20px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+}
+
+.tool-section h4 {
+    color: var(--accent);
+    margin-bottom: 10px;
+}
+
+.tool-input {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.tool-input input {
+    flex: 1;
+    padding: 10px;
+    background: var(--primary);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    color: var(--text);
+}
+
+.tool-input input:focus {
+    outline: none;
+    border-color: var(--accent);
+}
+
+.current-wifi-info {
+    background: var(--primary);
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 4px solid var(--success);
+}
+
+.current-wifi-info p {
+    margin: 10px 0;
+    color: var(--text);
+}
+
+.current-wifi-info strong {
+    color: var(--accent);
+}
+
+.hosts-list {
+    display: grid;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.host-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--primary);
+    padding: 10px;
+    border-radius: 4px;
+    border-left: 3px solid var(--accent);
+}
+
+.loading {
+    color: var(--accent);
+    text-align: center;
+    padding: 20px;
+    font-weight: bold;
+}
+
+.error {
+    color: var(--danger);
+    text-align: center;
+    padding: 20px;
+}

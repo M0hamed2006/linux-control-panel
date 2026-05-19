@@ -18,6 +18,9 @@
                 <a href="#" class="nav-item active" onclick="showSection('dashboard')">
                     📊 Dashboard
                 </a>
+                <a href="#" class="nav-item" onclick="showSection('network')">
+                    🌐 الشبكة
+                </a>
                 <a href="#" class="nav-item" onclick="showSection('alerts')">
                     🔔 التنبيهات <span class="badge" id="alert-badge">0</span>
                 </a>
@@ -48,10 +51,9 @@
                 </div>
             </header>
 
-            <!-- Dashboard Section -->
+            <!-- Dashboard Section (محفوظ كما هو) -->
             <section id="dashboard" class="section active">
                 <div class="dashboard-grid">
-                    <!-- CPU Card -->
                     <div class="card" data-metric="cpu">
                         <h3>المعالج (CPU)</h3>
                         <div class="metric">
@@ -61,7 +63,6 @@
                         <canvas id="cpuChart"></canvas>
                     </div>
 
-                    <!-- Memory Card -->
                     <div class="card" data-metric="memory">
                         <h3>الذاكرة (RAM)</h3>
                         <div class="metric">
@@ -71,7 +72,6 @@
                         <canvas id="memoryChart"></canvas>
                     </div>
 
-                    <!-- Disk Card -->
                     <div class="card" data-metric="disk">
                         <h3>القرص الصلب (Disk)</h3>
                         <div class="metric">
@@ -81,7 +81,6 @@
                         <canvas id="diskChart"></canvas>
                     </div>
 
-                    <!-- Network Card -->
                     <div class="card">
                         <h3>الشبكة 🌐</h3>
                         <div class="metric">
@@ -92,7 +91,6 @@
                         </div>
                     </div>
 
-                    <!-- Uptime Card -->
                     <div class="card">
                         <h3>وقت التشغيل ⏱️</h3>
                         <div class="metric">
@@ -101,7 +99,6 @@
                         </div>
                     </div>
 
-                    <!-- Processes Card -->
                     <div class="card">
                         <h3>العمليات 📋</h3>
                         <div class="metric">
@@ -112,7 +109,110 @@
                 </div>
             </section>
 
-            <!-- Alerts Section -->
+            <!-- Network Section - جديد! -->
+            <section id="network" class="section">
+                <div class="tabs">
+                    <button class="tab-button active" onclick="showNetworkTab('wifi')">📡 WiFi</button>
+                    <button class="tab-button" onclick="showNetworkTab('devices')">🖥️ الأجهزة</button>
+                    <button class="tab-button" onclick="showNetworkTab('tools')">🔧 الأدوات</button>
+                </div>
+
+                <!-- WiFi Tab -->
+                <div id="wifi-tab" class="tab-content active">
+                    <div class="card">
+                        <h3>شبكات الواي فاي المتاحة 📡</h3>
+                        <button onclick="scanWiFi()" class="btn btn-primary">🔄 مسح الآن</button>
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>الشبكة (SSID)</th>
+                                        <th>الإشارة %</th>
+                                        <th>الأمان</th>
+                                        <th>القناة</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="wifi-list">
+                                    <tr><td colspan="4">جاري المسح...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3>الاتصال الحالي 🔗</h3>
+                        <div id="current-wifi">جاري التحميل...</div>
+                    </div>
+                </div>
+
+                <!-- Devices Tab -->
+                <div id="devices-tab" class="tab-content">
+                    <div class="card">
+                        <h3>الأجهزة على الشبكة 🖥️</h3>
+                        <button onclick="loadDevices()" class="btn btn-primary">🔄 مسح الآن</button>
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>عنوان IP</th>
+                                        <th>MAC Address</th>
+                                        <th>الشركة المصنعة</th>
+                                        <th>الحالة</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="devices-list">
+                                    <tr><td colspan="4">جاري التحميل...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tools Tab -->
+                <div id="tools-tab" class="tab-content">
+                    <div class="card">
+                        <h3>أدوات الشبكة 🔧</h3>
+                        
+                        <div class="tool-section">
+                            <h4>Ping</h4>
+                            <div class="tool-input">
+                                <input type="text" id="ping-ip" placeholder="أدخل عنوان IP" value="8.8.8.8">
+                                <button onclick="pingHost()" class="btn btn-primary">Ping</button>
+                            </div>
+                            <div id="ping-result"></div>
+                        </div>
+
+                        <div class="tool-section">
+                            <h4>DNS Lookup</h4>
+                            <div class="tool-input">
+                                <input type="text" id="dns-domain" placeholder="أدخل اسم domain" value="google.com">
+                                <button onclick="dnsLookup()" class="btn btn-primary">ابحث</button>
+                            </div>
+                            <div id="dns-result"></div>
+                        </div>
+
+                        <div class="tool-section">
+                            <h4>Port Scanner</h4>
+                            <div class="tool-input">
+                                <input type="text" id="port-ip" placeholder="أدخل عنوان IP" value="192.168.1.1">
+                                <button onclick="quickPortScan()" class="btn btn-primary">فحص سريع</button>
+                            </div>
+                            <div id="port-result"></div>
+                        </div>
+
+                        <div class="tool-section">
+                            <h4>Ping Sweep</h4>
+                            <div class="tool-input">
+                                <input type="text" id="sweep-network" placeholder="أدخل الشبكة" value="192.168.1.0/24">
+                                <button onclick="pingSweep()" class="btn btn-primary">مسح</button>
+                            </div>
+                            <div id="sweep-result"></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Alerts Section (محفوظ) -->
             <section id="alerts" class="section">
                 <div class="card">
                     <h3>التنبيهات 🔔</h3>
@@ -128,7 +228,7 @@
                 </div>
             </section>
 
-            <!-- Processes Section -->
+            <!-- Processes Section (محفوظ) -->
             <section id="processes" class="section">
                 <div class="card">
                     <h3>أعلى العمليات استهلاكاً 📋</h3>
@@ -155,7 +255,7 @@
                 </div>
             </section>
 
-            <!-- Services Section -->
+            <!-- Services Section (محفوظ) -->
             <section id="services" class="section">
                 <div class="card">
                     <h3>الخدمات (Services) ⚙️</h3>
@@ -177,7 +277,7 @@
                 </div>
             </section>
 
-            <!-- Logs Section -->
+            <!-- Logs Section (محفوظ) -->
             <section id="logs" class="section">
                 <div class="card">
                     <h3>الـ Logs 📜</h3>
@@ -193,7 +293,7 @@
                 </div>
             </section>
 
-            <!-- Statistics Section -->
+            <!-- Statistics Section (محفوظ) -->
             <section id="statistics" class="section">
                 <div class="card">
                     <h3>الإحصائيات 📈</h3>
@@ -206,7 +306,7 @@
                 </div>
             </section>
 
-            <!-- Settings Section -->
+            <!-- Settings Section (محفوظ) -->
             <section id="settings" class="section">
                 <div class="card">
                     <h3>الإعدادات ⚙️</h3>
