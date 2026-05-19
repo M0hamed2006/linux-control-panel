@@ -18,6 +18,9 @@
                 <a href="#" class="nav-item active" onclick="showSection('dashboard')">
                     📊 Dashboard
                 </a>
+                <a href="#" class="nav-item" onclick="showSection('alerts')">
+                    🔔 التنبيهات <span class="badge" id="alert-badge">0</span>
+                </a>
                 <a href="#" class="nav-item" onclick="showSection('processes')">
                     📋 العمليات
                 </a>
@@ -27,8 +30,11 @@
                 <a href="#" class="nav-item" onclick="showSection('logs')">
                     📜 الـ Logs
                 </a>
-                <a href="#" class="nav-item" onclick="showSection('system')">
-                    🖱️ النظام
+                <a href="#" class="nav-item" onclick="showSection('statistics')">
+                    📈 الإحصائيات
+                </a>
+                <a href="#" class="nav-item" onclick="showSection('settings')">
+                    ⚙️ الإعدادات
                 </a>
             </nav>
         </aside>
@@ -38,6 +44,7 @@
                 <h1>لوحة التحكم الحية 🔴</h1>
                 <div class="status-bar">
                     <span class="status" id="status">متصل ✅</span>
+                    <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
                 </div>
             </header>
 
@@ -101,6 +108,22 @@
                             <div class="value" id="process-count">0</div>
                             <div class="label">عملية نشطة</div>
                         </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Alerts Section -->
+            <section id="alerts" class="section">
+                <div class="card">
+                    <h3>التنبيهات 🔔</h3>
+                    <div class="filter-bar">
+                        <button onclick="filterAlerts('all')" class="btn btn-primary">الكل</button>
+                        <button onclick="filterAlerts('warning')" class="btn btn-warning">تحذيرات</button>
+                        <button onclick="filterAlerts('critical')" class="btn btn-danger">حرجة</button>
+                        <button onclick="clearAlerts()" class="btn btn-secondary">حذف الكل</button>
+                    </div>
+                    <div class="alerts-container" id="alerts-list">
+                        <p>لا توجد تنبيهات</p>
                     </div>
                 </div>
             </section>
@@ -170,11 +193,55 @@
                 </div>
             </section>
 
-            <!-- System Section -->
-            <section id="system" class="section">
+            <!-- Statistics Section -->
+            <section id="statistics" class="section">
                 <div class="card">
-                    <h3>معلومات النظام 🖱️</h3>
-                    <div id="system-info">جاري التحميل...</div>
+                    <h3>الإحصائيات 📈</h3>
+                    <div class="filter-bar">
+                        <button onclick="loadStats(24)" class="btn btn-primary">24 ساعة</button>
+                        <button onclick="loadStats(7)" class="btn btn-primary">أسبوع</button>
+                        <button onclick="loadStats(30)" class="btn btn-primary">شهر</button>
+                    </div>
+                    <canvas id="statsChart" style="max-height: 400px; margin-top: 20px;"></canvas>
+                </div>
+            </section>
+
+            <!-- Settings Section -->
+            <section id="settings" class="section">
+                <div class="card">
+                    <h3>الإعدادات ⚙️</h3>
+                    <div class="settings-grid">
+                        <div class="setting-item">
+                            <label>CPU Warning %</label>
+                            <input type="number" id="cpu-warning" min="0" max="100" value="70">
+                            <button onclick="saveSetting('cpu', 'warning')" class="btn btn-primary">حفظ</button>
+                        </div>
+                        <div class="setting-item">
+                            <label>CPU Critical %</label>
+                            <input type="number" id="cpu-critical" min="0" max="100" value="90">
+                            <button onclick="saveSetting('cpu', 'critical')" class="btn btn-primary">حفظ</button>
+                        </div>
+                        <div class="setting-item">
+                            <label>Memory Warning %</label>
+                            <input type="number" id="memory-warning" min="0" max="100" value="75">
+                            <button onclick="saveSetting('memory', 'warning')" class="btn btn-primary">حفظ</button>
+                        </div>
+                        <div class="setting-item">
+                            <label>Memory Critical %</label>
+                            <input type="number" id="memory-critical" min="0" max="100" value="90">
+                            <button onclick="saveSetting('memory', 'critical')" class="btn btn-primary">حفظ</button>
+                        </div>
+                        <div class="setting-item">
+                            <label>Disk Warning %</label>
+                            <input type="number" id="disk-warning" min="0" max="100" value="80">
+                            <button onclick="saveSetting('disk', 'warning')" class="btn btn-primary">حفظ</button>
+                        </div>
+                        <div class="setting-item">
+                            <label>Disk Critical %</label>
+                            <input type="number" id="disk-critical" min="0" max="100" value="95">
+                            <button onclick="saveSetting('disk', 'critical')" class="btn btn-primary">حفظ</button>
+                        </div>
+                    </div>
                 </div>
             </section>
         </main>
