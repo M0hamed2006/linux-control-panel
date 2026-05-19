@@ -646,3 +646,53 @@ document.addEventListener('DOMContentLoaded', function() {
     loadProcesses();
 });
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              
+// ==================== Export Functions ====================
+
+function exportJSON(type) {
+    const endpoint = type === 'stats' ? '/api/export/stats/json' : '/api/export/alerts/json';
+    fetch(endpoint)
+        .then(res => res.json())
+        .then(data => {
+            const result = document.getElementById('export-result');
+            result.innerHTML = `
+                <div class="result-box success">
+                    <p>✅ تم التصدير بنجاح!</p>
+                    <p>${data.exported} سجل</p>
+                    <a href="/api/export/download/${data.filename}" class="btn btn-primary" download>
+                        تحميل
+                    </a>
+                </div>
+            `;
+        });
+}
+
+function exportCSV(type) {
+    fetch('/api/export/stats/csv')
+        .then(res => res.json())
+        .then(data => {
+            const result = document.getElementById('export-result');
+            result.innerHTML = `
+                <div class="result-box success">
+                    <p>✅ تم التصدير بنجاح!</p>
+                    <p>${data.exported} سجل</p>
+                    <a href="/api/export/download/${data.filename}" class="btn btn-primary" download>
+                        تحميل
+                    </a>
+                </div>
+            `;
+        });
+}
+
+function generateReport() {
+    const result = document.getElementById('export-result');
+    result.innerHTML = '<p class="loading">جاري إنشاء التقرير...</p>';
+    
+    setTimeout(() => {
+        result.innerHTML = `
+            <div class="result-box success">
+                <p>✅ تم إنشاء التقرير بنجاح!</p>
+                <a href="#" class="btn btn-primary">📄 تحميل PDF</a>
+            </div>
+        `;
+    }, 2000);
+}

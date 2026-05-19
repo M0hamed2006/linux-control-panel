@@ -703,3 +703,37 @@ canvas {
     padding: 20px;
 }
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              
+.export-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin: 20px 0;
+}
+
+.export-item {
+    background: var(--primary);
+    padding: 20px;
+    border-radius: 8px;
+    border-left: 4px solid var(--accent);
+    text-align: center;
+}
+
+.export-item h4 {
+    color: var(--accent);
+    margin-bottom: 15px;
+}
+
+.export-item .btn {
+    display: block;
+    margin: 8px auto;
+    width: 100%;
+}
+
+#export-result {
+    margin-top: 20px;
+}
+
+a.btn {
+    text-decoration: none;
+    display: inline-block;
+}

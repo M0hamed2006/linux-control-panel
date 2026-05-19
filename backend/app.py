@@ -1,15 +1,18 @@
-from flask import Flask, render_template, send_file
+from flask import Flask, render_template
 from flask_socketio import SocketIO, emit
 from services.system_monitor import SystemMonitor
 from services.alert_monitor import AlertMonitor
 from services.database import Database
 from services.performance_analyzer import PerformanceAnalyzer
+from services.scheduler import Scheduler
 from routes.dashboard import dashboard_bp
 from routes.network import network_bp
 from routes.security import security_bp
 from routes.analytics import analytics_bp
+from routes.export import export_bp
 import threading
 import time
+import os
 
 app = Flask(__name__, template_folder='../frontend/templates', static_folder='../frontend/static')
 app.config['SECRET_KEY'] = 'your-secret-key-here'
@@ -19,12 +22,17 @@ monitor = SystemMonitor()
 alert_monitor = AlertMonitor()
 db = Database()
 analyzer = PerformanceAnalyzer()
+scheduler = Scheduler()
+
+# إنشاء مجلد التصدير
+os.makedirs('exports', exist_ok=True)
 
 # تسجيل الـ Blueprints
 app.register_blueprint(dashboard_bp)
 app.register_blueprint(network_bp)
 app.register_blueprint(security_bp)
 app.register_blueprint(analytics_bp)
+app.register_blueprint(export_bp)
 
 monitoring = False
 
@@ -54,7 +62,6 @@ def send_system_data():
         try:
             sys_data = monitor.get_all_system_info()
             
-            # تسجيل المقاييس
             analyzer.record_metrics(
                 sys_data['cpu']['percent'],
                 sys_data['memory']['percent'],
@@ -100,4 +107,8 @@ def send_system_data():
 if __name__ == '__main__':
     print("🚀 Starting Linux Control Panel...")
     print("📱 Open http://localhost:5000 in your browser")
+    
+    # بدء الجدول
+    scheduler.start()
+    
     socketio.run(app, host='127.0.0.1', port=5000, debug=True, use_reloader=False)
